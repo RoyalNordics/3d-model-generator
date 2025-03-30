@@ -43,6 +43,49 @@ Etabler fundamentet for browser-baseret upload og metadataindtastning, så bruge
 
 Tilføj som "in-progress" i roo.runplan.json
 
+== Task 010 – Implementér gem-funktion og redirect fra upload-siden
+
+=== Formål:
+
+Når brugeren klikker “Opret projekt”, skal data gemmes og brugeren videresendes til næste trin.
+
+=== Fil:
+
+/app/upload/page.tsx
+
+=== Funktionalitet:
+
+. Gem metadata i Supabase:
+ .. Indsæt ny række i `projects`-tabellen
+ .. Felter: navn, design_navn, kollektion, version, højde, bredde, dybde, image_url
+
+. Upload billede:
+ .. Upload til Supabase Storage (bucket: `project-images`)
+ .. Brug UUID som filnavn
+ .. Gem image_url i projektet
+
+. Redirect:
+ .. Når projektet er oprettet, redirect til:
+  .. `/project/[project_id]` eller alternativ projekt-visning
+
+. UI-feedback:
+ .. Vis “Projekt oprettet” besked før redirect
+ .. Deaktivér knappen mens handling udføres
+
+=== Test:
+
+* Udfyld formular og klik “Opret projekt”
+* Bekræft at projekt oprettes i Supabase med billede
+* Bekræft at brugeren videresendes korrekt
+
+=== Output:
+
+* Upload-siden fuldfører oprettelse og sender brugeren videre
+
+=== Status:
+
+Tilføj som "in-progress" i roo.runplan.json
+
 == Task 002 – Opsæt Supabase database og tabeller
 
 === Formål:
@@ -489,55 +532,6 @@ Muliggør oprettelse af nyt taskedesign ved at indtaste metadata og uploade bill
 === Status:
 
 Tilføj som "in-progress" i roo.runplan.json
-
-== Task 009 – Opret upload-side til oprettelse af nyt projekt
-
-=== Formål:
-
-Muliggør oprettelse af nyt taskedesign ved at indtaste metadata og uploade billede.
-
-=== Placering:
-
-/app/upload/page.tsx
-
-=== Funktionalitet:
-
-. Formularfelter:
- .. Projektnavn
- .. Designnavn
- .. Kollektion
- .. Version
- .. Højde (mm)
- .. Bredde (mm)
- .. Dybde (mm)
- .. Upload billede (acceptér kun PNG og JPEG)
-
-. UI-behavior:
- .. Vis preview af billede
- .. Valider at alle felter er udfyldt
- .. Vis fejlbesked ved manglende input
- .. “Opret projekt”-knap aktiveres først når alt er gyldigt
-
-. Efter klik:
- .. Billede gemmes i Supabase Storage (`project-images`)
- .. Metadata + billede-url gemmes i `projects`-tabellen
- .. Brugeren viderestilles til næste skridt (fx segmentering eller projektvisning)
-
-. Brug komponentbibliotek:
- .. Tailwind til styling
- .. Shadcn/ui (hvis installeret)
-
-=== Test:
-
-* Opret projekt med billede og metadata
-* Tjek at projekt fremgår i Supabase med billede-url
-* Tjek validering og preview virker
-
-=== Output:
-
-* En fungerende upload-side klar til test i browser
-
-=== Status:
 
 Tilføj som "in-progress" i roo.runplan.json
 
