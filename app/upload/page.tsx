@@ -43,6 +43,13 @@ const UploadPage = () => {
         */}
 
         <button type="submit">Create Project</button>
+
+        {/* Add logic for:
+          - Gem metadata i Supabase
+          - Upload billede
+          - Redirect
+          - UI-feedback
+        */}
       </form>
     </div>
   );

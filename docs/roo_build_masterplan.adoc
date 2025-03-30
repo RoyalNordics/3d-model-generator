@@ -431,6 +431,100 @@ Gør det muligt at finde og redigere tidligere oprettede taskedesigns.
 
 Tilføj som "in-progress" i roo.runplan.json
 
+== Task 010 – Implementér gem-funktion og redirect fra upload-siden
+
+=== Formål:
+
+Når brugeren klikker “Opret projekt”, skal data gemmes og brugeren videresendes til næste trin.
+
+=== Fil:
+
+/app/upload/page.tsx
+
+=== Funktionalitet:
+
+. Gem metadata i Supabase:
+ .. Indsæt ny række i `projects`-tabellen
+ .. Felter: navn, design_navn, kollektion, version, højde, bredde, dybde, image_url
+
+. Upload billede:
+ .. Upload til Supabase Storage (bucket: `project-images`)
+ .. Brug UUID som filnavn
+ .. Gem image_url i projektet
+
+. Redirect:
+ .. Når projektet er oprettet, redirect til:
+  .. `/project/[project_id]` eller alternativ projekt-visning
+
+. UI-feedback:
+ .. Vis “Projekt oprettet” besked før redirect
+ .. Deaktivér knappen mens handling udføres
+
+=== Test:
+
+* Udfyld formular og klik “Opret projekt”
+* Bekræft at projekt oprettes i Supabase med billede
+* Bekræft at brugeren videresendes korrekt
+
+=== Output:
+
+* Upload-siden fuldfører oprettelse og sender brugeren videre
+
+=== Status:
+
+Tilføj som "in-progress" i roo.runplan.json
+
+== Task 011 – Fuldt MVP-testflow – opret alle manglende visninger og navigation
+
+=== Formål:
+
+Sikre at hele brugerrejsen fra upload → segmentering → hardware → 3D preview → eksport fungerer uden afbrudt flow.
+
+=== Funktionalitet og ruter:
+
+. Projektvisning: `/project/[id]`
+ .. Vis metadata for projektet (navn, kollektion, mål)
+ .. Vis billede (fra Supabase)
+ .. Knapper:
+  .. “Segmentér forside” → sender til `/project/[id]/segment`
+  .. “Tilføj hardware” → sender til `/project/[id]/hardware`
+  .. “3D Preview” → sender til `/project/[id]/3d-preview`
+
+. Segmentering: `/project/[id]/segment`
+ .. Kald segmentation API (med billede)
+ .. Vis polygoner som preview
+ .. Gem felter i Supabase (segments-table)
+ .. Vis bekræftelse
+
+. Hardware: `/project/[id]/hardware`
+ .. Vis eksisterende hardware
+ .. Vælg og tilknyt hardware til projekt
+ .. Gem relation i DB
+
+. 3D Preview: `/project/[id]/3d-preview`
+ .. Generér 3D box med dimensioner
+ .. Projicér felter (fra segments-table)
+ .. Vis hover-navne
+ .. Knap: Download glTF
+
+=== Teknologi:
+
+* Next.js (App Router)
+* Supabase (queries via supabaseClient)
+* React Three Fiber (preview)
+
+=== Test:
+
+* Start med upload → redirect til projektvisning
+* Klik igennem flowet trin for trin
+* Bekræft data gemmes og vises
+
+=== Afslut tasken med commit + push
+
+=== Status:
+
+Tilføj som "in-progress" i roo.runplan.json
+
 == Task 009 – Opret upload-side til oprettelse af nyt projekt
 
 === Formål:

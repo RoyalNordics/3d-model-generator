@@ -272,5 +272,44 @@
       "Upload-siden fuldfører oprettelse og sender brugeren videre"
     ],
     "status": "in-progress"
+  },
+  {
+    "task": "Task 011 – Fuldt MVP-testflow – opret alle manglende visninger og navigation",
+    "purpose": "Sikre at hele brugerrejsen fra upload → segmentering → hardware → 3D preview → eksport fungerer uden afbrudt flow.",
+    "functionality": [
+      "Projektvisning: `/project/[id]`",
+      "Vis metadata for projektet (navn, kollektion, mål)",
+      "Vis billede (fra Supabase)",
+      "Knapper:",
+      "“Segmentér forside” → sender til `/project/[id]/segment`",
+      "“Tilføj hardware” → sender til `/project/[id]/hardware`",
+      "“3D Preview” → sender til `/project/[id]/3d-preview`",
+      "Segmentering: `/project/[id]/segment`",
+      "Kald segmentation API (med billede)",
+      "Vis polygoner som preview",
+      "Gem felter i Supabase (segments-table)",
+      "Vis bekræftelse",
+      "Hardware: `/project/[id]/hardware`",
+      "Vis eksisterende hardware",
+      "Vælg og tilknyt hardware til projekt",
+      "Gem relation i DB",
+      "3D Preview: `/project/[id]/3d-preview`",
+      "Generér 3D box med dimensioner",
+      "Projicér felter (fra segments-table)",
+      "Vis hover-navne",
+      "Knap: Download glTF"
+    ],
+    "technology": [
+      "Next.js (App Router)",
+      "Supabase (queries via supabaseClient)",
+      "React Three Fiber (preview)"
+    ],
+    "test": [
+      "Start med upload → redirect til projektvisning",
+      "Klik igennem flowet trin for trin",
+      "Bekræft data gemmes og vises"
+    ],
+    "Afslut tasken med commit + push": [],
+    "status": "in-progress"
   }
 ]
