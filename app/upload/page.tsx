@@ -1,10 +1,29 @@
+"use client";
+
 import React from 'react';
+import { useRouter } from 'next/navigation';
 
 const UploadPage = () => {
+  const router = useRouter();
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    // Add logic for:
+    // - Saml data fra formularfelter
+    // - Upload billedet til Supabase Storage
+    // - Opret ny række i `projects`-tabellen
+    // - Vent på svar
+
+    // After success:
+    // - Brug `router.push("/project/[project_id]")` med korrekt ID
+    // - Evt. vis "Projekt oprettet" kortvarigt først
+    router.push("/project/123"); // Placeholder redirect
+  };
+
   return (
     <div>
       <h1>Create New Project</h1>
-      <form>
+      <form onSubmit={handleSubmit}>
         {/* Add form fields here:
           - Projektnavn
           - Designnavn
@@ -24,13 +43,6 @@ const UploadPage = () => {
         */}
 
         <button type="submit">Create Project</button>
-
-        {/* Add logic for:
-          - Gem metadata i Supabase
-          - Upload billede
-          - Redirect
-          - UI-feedback
-        */}
       </form>
     </div>
   );
