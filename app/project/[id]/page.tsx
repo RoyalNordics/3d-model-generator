@@ -7,13 +7,20 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 const ProjectView = () => {
   const { id } = useParams();
   const [project, setProject] = useState(null);
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
   const supabase = createClientComponentClient({
-    supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
-    supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    supabaseUrl: supabaseUrl,
+    supabaseKey: supabaseKey
   });
 
   useEffect(() => {
     const fetchProject = async () => {
+      if (!supabaseUrl || !supabaseKey) {
+        console.error("Supabase URL or Key not provided!");
+        return;
+      }
+
       const { data, error } = await supabase
         .from('projects')
         .select('*')
@@ -28,7 +35,7 @@ const ProjectView = () => {
     };
 
     fetchProject();
-  }, [id, supabase]);
+  }, [id, supabaseUrl, supabaseKey, supabase]);
 
   if (!project) {
     return <div>Loading...</div>;
