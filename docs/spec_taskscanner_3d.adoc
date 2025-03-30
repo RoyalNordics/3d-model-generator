@@ -1,0 +1,210 @@
+= SPEC-1: Automatisk konvertering af taske-billeder til segmenteret 3D-model
+:sectnums:
+:toc:
+
+
+== Background
+
+EGO er en luksusplatform, hvor kunder kan designe deres egen taske med millioner af kombinationsmuligheder – farver, materialer og detaljer vælges frit på baggrund af standard-modeller.
+
+For at understøtte hurtig og effektiv opsætning af disse grundmodeller, har EGO brug for et internt AI-værktøj der, ud fra et billede af en fysisk taske, automatisk kan:
+1. Identificere og segmentere de forskellige felter, taskens overflade består af.
+2. Generere en simpel 3D-model med disse felter som editérbare områder.
+3. Spørge om taskens dimensioner og andre segmenterede flader (fx bagside, sider, bund).
+4. Eksportere en digital fil, som kan bruges direkte på ego-custom.com til kundens interaktive designoplevelse.
+
+Dette værktøj skal både hjælpe med opsætning af de første 20 modeller og fremtidig onboarding af nye design.
+
+== Requirements
+
+Dette værktøj skal bruges internt af EGO-teamet og understøtte onboarding af nye taskemodeller, så de kan bruges i den kundevendte konfigurator på ego-custom.com.
+
+=== Must Have
+- Automatisk analyse og segmentering af taskens forside ud fra billede
+- Brugeren skal kunne angive mål (højde, bredde, dybde)
+- Brugeren skal kunne navngive projektet (fx projektnavn, designnavn, kollektion, version)
+- AI'en skal spørge om der er felter på andre sider (bund, bagside, sider)
+- Der skal genereres en 3D-model med navngivne felter
+- Output skal være i `.glTF`-format eller andet kompatibelt med webGL-preview
+- Metadata og hardware skal kunne knyttes til designet (fx lynlås-type, spænder, håndtag osv.)
+
+=== Should Have
+- Simpelt browser-baseret UI til upload, redigering og eksport
+- Navngivning eller tagging af felter (fx “Forside-Felt-1”)
+- Oversigt over tilknyttede hardwarekomponenter i projektet
+- Mulighed for at gemme og genåbne projekter
+
+=== Could Have
+- AI-genereret forslag til segmentering på andre sider baseret på frontbilledet
+- Automatisk skalering af modellen baseret på kendt taskehøjde (referencemåling)
+- Forslag til kompatibel hardware baseret på tidligere brug i andre projekter
+
+=== Won't Have
+- Genkendelse af materialer, teksturer eller farver
+- Automatisk positionering i EGO's konfigurationsværktøj
+
+== Method
+
+Systemet består af et simpelt browser-baseret interface, understøttet af en AI-segmenteringspipeline, som tager et billede af en taske og producerer en 3D-model med segmenterede flader. Systemet gemmer designmetadata og hardwareinfo i en database og eksporterer 3D-filer til brug i frontend-konfiguratoren.
+
+=== Arkitekturdiagram
+[plantuml]
+----
+@startuml
+actor User
+rectangle "Browser UI" {
+  User --> UploadView
+  UploadView --> SegmentationInputForm
+  SegmentationInputForm --> 3DPreview
+  SegmentationInputForm --> ProjectMetaForm
+}
+
+cloud "AI Segmentation Service" {
+  rectangle "Segmentering Model (YOLO / SAM)" as Model
+  rectangle "3D Mesh Generator" as MeshGen
+  rectangle "Metadata + glTF Exporter" as Exporter
+}
+
+rectangle "Storage & DB (Supabase)" {
+  database "Designs DB"
+  folder "3D Files (glTF)"
+  folder "Images"
+  database "Hardware Registry"
+}
+
+UploadView --> Model : Upload billede
+Model --> MeshGen : Segmenteringsdata
+MeshGen --> Exporter : Generér .glTF
+Exporter --> "3D Files (glTF)" : Gem model
+Exporter --> "Designs DB" : Gem metadata
+Exporter --> 3DPreview : Returnér preview
+ProjectMetaForm --> "Designs DB" : Gem projektinfo
+@enduml
+----
+
+=== Workflow
+
+1. **Opret nyt projekt**:
+   - Brugeren navngiver projekt (fx “EGO-Kollektion-2025-Model07”)
+   - Indtaster: designnavn, kollektion, version, dimensioner (H x B x D)
+   - Upload billede af forsiden af tasken
+
+2. **AI-segmentering**:
+   - Billedet analyseres via vision-model (YOLOv8 + Segment Anything)
+   - Felter opdeles i polygoner (områder), som senere kan navngives
+   - Brugeren bekræfter felterne og markerer evt. sidesegmenter
+
+3. **3D-modellering**:
+   - Systemet opbygger en simpelt 3D-box med de angivne mål
+   - Felterne projiceres på forsiden, og navngives (Forside-Felt-1, -2, ...)
+   - Output gemmes som glTF med metadata
+
+4. **Hardware-tilknytning**:
+   - Brugeren vælger eller opretter hardware (fx lynlåstype, remme, spænder)
+   - Disse linkes til projektet og gemmes i en separat hardware-tabel
+
+5. **Eksport og visning**:
+   - 3D-modellen vises i preview
+   - Projektet gemmes og kan senere genåbnes/redigeres
+   - Filer og metadata kan integreres med EGO-konfigurator
+
+=== Datamodeller
+
+.Projekter
+|===
+| id | navn | design_navn | kollektion | version | højde | bredde | dybde | gltf_url | billede_url | hardware[]
+
+| UUID | TEXT | TEXT | TEXT | TEXT | INT | INT | INT | TEXT | TEXT | ARRAY(UUID)
+|===
+
+.Hardware
+|===
+| id | navn | type | leverandør | pris_enhed | farver[]
+
+| UUID | TEXT | TEXT | TEXT | DECIMAL | ARRAY(TEXT)
+|===
+
+.Felter (i glTF gemmes som mesh-navne + metadata)
+- navn: f.eks. "forside_felt_1"
+- overflade: polygon
+- side: forside, bagside, bund, side_højre, side_venstre
+
+== Implementation
+
+Dette afsnit beskriver de tekniske beslutninger og byggeblokke, som implementeres i Roo-opgaver for at realisere værktøjet til segmenteret 3D-modellering af tasker.
+
+=== Teknologier
+
+- Frontend: Next.js + Tailwind + React Three Fiber (3D preview)
+- Backend/API: Supabase (PostgreSQL + Storage + Edge Functions)
+- AI-pipeline: Python FastAPI + HuggingFace (YOLOv8 + Segment Anything Model)
+- 3D-modellering: Trimesh / Blender script / glTF pipeline
+- Dataudveksling: JSON (metadata), glTF (3D-modeller), REST API (backend)
+
+=== Systemkomponenter og implementeringstrin
+
+1. **Frontend UI (Next.js App)**
+   - Upload-funktionalitet for billeder
+   - Formular til metadata (projektnavn, dimensioner osv.)
+   - 3D preview-komponent (React Three Fiber)
+   - Segmenterings-editor (vise/justere felter)
+
+2. **AI Segmenteringsservice**
+   - Python FastAPI backend
+   - Billedinput → segmenteringsmodel (YOLOv8 pre-train + SAM til polygoner)
+   - Output: JSON med polygoner + side-navne + felt-id’er
+
+3. **3D Generator**
+   - Tag mål + segmenter → generér box-modeller med UV-mapping
+   - Output gemmes som `.glb` eller `.gltf`
+   - Mesh-navne svarer til felt-navne
+
+4. **Projektgem & eksport**
+   - Gem projektdata i Supabase (projekttabel + hardwarelink)
+   - Gem glTF og billede i Supabase storage
+   - Returnér download-link til frontend
+
+5. **Hardware-tilknytning**
+   - UI-komponent til at tilføje hardwarekomponenter
+   - Gemmes i separat hardware-tabel
+   - Bruges til fremtidig omkostningsberegning og produktion
+
+=== Roo Task Mapping (forslag)
+
+- Task 001: Init frontend-projektstruktur i Next.js
+- Task 002: Opret Supabase DB + tabeller (projekter, hardware)
+- Task 003: Byg upload + metadata-form i frontend
+- Task 004: Opsæt AI-segmentering med FastAPI
+- Task 005: Generér 3D-modeller ud fra polygoner
+- Task 006: Tilføj hardware-editor og gemmefunktion
+- Task 007: Implementér 3D-preview i browser
+- Task 008: Eksport-funktion (gltf + metadata)
+
+Alle tasks opdateres i roo.runplan.json og afspejles i roo_build_masterplan.adoc som trinbaserede delmål.
+
+== Milestones
+
+Milepæle for funktionelt MVP af 3D-segmenteringsværktøjet. Disse matches med Roo's opgaver (Task 001–008) og kan opdateres løbende i roo_build_masterplan.adoc.
+
+1. ✅ Struktur og specifikation færdig (denne fil)
+2. ⏳ Task 001–003: Frontend (upload, metadata, previewstruktur)
+3. ⏳ Task 004–005: AI-segmentering + glTF-generator
+4. ⏳ Task 006: Hardware-håndtering og datamodel
+5. ⏳ Task 007: Full 3D-preview med navngivne felter
+6. ⏳ Task 008: Eksport + genåbn projekt
+
+Systemet forventes at kunne producere første taskemodel digitalt senest 14 dage efter første MVP-task er startet.
+
+== Gathering Results
+
+Ved afslutning af MVP implementering gennemføres følgende validering:
+
+- Upload af 3–5 taskebilleder
+- Test af AI-segmentering: identificerer AI 80–90% af felterne korrekt?
+- Justering af felter via UI
+- Generering og eksport af glTF-fil
+- Genåbning af tidligere gemt projekt
+- Tilknytning og visning af hardware
+- Visning af modellen i EGO-preview (testmiljø)
+
+Systemet anses som færdigt, når en ny taske kan digitaliseres, konfigureres og eksporteres på under 30 minutter af en ikke-teknisk bruger.

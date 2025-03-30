@@ -1,0 +1,85 @@
+= Overlevering: EGO 3D Designmodul (Internt værktøj)
+:toc:
+:sectnums:
+
+== Formål
+
+Dette dokument er en fuld overlevering af projektet "3d-model-generator" til enhver udvikler, AI-agent eller ny ansvarlig. Det beskriver projektets mål, struktur, komponenter, og hvordan systemet anvendes i praksis.
+
+== Kontekst
+
+- Organisation: EGO
+- Vision: Kunder designer egne luksustasker baseret på konfigurerbare felter
+- Dette modul: Internt værktøj til opbygning af grunddesigns ud fra billeder af tasker
+
+== Systemets funktion
+
+- Upload billede af taske
+- Segmentér felter vha. AI (YOLOv8 + Segment Anything)
+- Indtast mål og metadata
+- Generér 3D-model med felter (glTF)
+- Tilføj hardwarekomponenter
+- Eksportér til videre brug i EGO’s konfigurator
+- Genåbn og redigér projekter løbende
+
+== Komponenter
+
+=== Frontend
+- Bygget i Next.js (app-router)
+- Uploadformular, metadata-formular, 3D-preview (React Three Fiber)
+- Segmenteditor og hardwaretilknytning
+- Henter og skriver data til Supabase
+
+=== Backend
+- Supabase: PostgreSQL + Storage
+- Tabeller: projects, hardware, segments, project_hardware_link
+
+=== AI-service
+- FastAPI endpoint: /segment
+- Hostet på Render: https://segmentation-api-5tom.onrender.com
+- Input: billede
+- Output: polygoner med felt-identifikation
+
+=== 3D preview & eksport
+- Simpel 3D box bygges efter mål
+- Felter mappes på flader (navngivet mesh)
+- Download glTF med metadata
+
+== Arbejdsproces
+
+1. Start et nyt projekt via /upload
+2. Indtast metadata og upload billede
+3. AI genererer felter → vises og godkendes
+4. Tilføj hardware
+5. Se 3D preview og eksporter model
+6. Gem og genåbn projekt efter behov
+
+== Roo-integration
+
+Projektet er bygget 100 % som Roo-kompatibelt:
+- Alle opgaver dokumenteret i roo_build_masterplan.adoc
+- Status i build.status.json og roo.runplan.json
+- Dokumentation i spec_taskscanner_3d.adoc
+- Kommunikation foregår via ai-communication.md
+
+== Vigtige filer og mapper
+
+- docs/spec_taskscanner_3d.adoc → Hovedspecifikation
+- docs/roo_build_masterplan.adoc → Alle tasks
+- docs/handover_ego_3d_module.adoc → Dette dokument
+- /services/segmentation-api/ → AI-segmentering
+- /app/ → Next.js frontend
+- /lib/supabase.ts → Supabase klient
+- .env.example → Miljøvariabler
+
+== Supabase strukturer
+
+Se detaljer i Task 002 – tabeller med relationer og felttyper.
+
+== Ved overdragelse
+
+Ved ny person eller AI der overtager:
+- Læs dette dokument først
+- Læs spec_taskscanner_3d.adoc derefter
+- Check status i build.status.json
+- Brug roo_build_masterplan.adoc som roadmap

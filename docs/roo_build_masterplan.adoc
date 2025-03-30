@@ -1,0 +1,389 @@
+= Roo Build Masterplan
+
+== Task 001 – Frontend projektstruktur og uploadformular
+
+=== Formål:
+
+Etabler fundamentet for browser-baseret upload og metadataindtastning, så brugeren kan starte nye projekter.
+
+=== Struktur:
+
+* Opret nyt Next.js 14-projekt under `/app/`
+* Brug TailwindCSS til styling
+* Brug app-router struktur (ikke pages)
+
+=== Trin:
+
+. Initialiser Next.js-projekt med Tailwind og Typescript
+. Opret følgende sider og komponenter:
+ .. `/upload` - UploadView: upload billede (acceptér PNG/JPEG)
+ .. `/project` - ProjectMetaForm: inputfelter til projektnavn, designnavn, kollektion, version, højde, bredde, dybde
+. Vis preview af uploadet billede på siden
+. Valider at alle inputfelter er udfyldt før "Næste"-knap aktiveres
+. Gem upload midlertidigt i local state (fil + metadata)
+. Gør klar til at sende data videre til backend via POST (endpoint endnu ikke bygget)
+
+=== Tests:
+
+* Formular validerer manglende felter
+* Billede preview vises korrekt
+* "Næste"-knap kun aktiv ved korrekt input
+
+=== Output:
+
+* Kørbart Next.js-projekt med upload + formular
+* Klar til integration med AI-service i næste task
+
+=== Placering:
+
+* Frontendkode placeres under `/app/` i repo
+* Komponenter i `/components/`
+
+=== Status:
+
+Tilføj som "in-progress" i roo.runplan.json
+
+== Task 002 – Opsæt Supabase database og tabeller
+
+=== Formål:
+
+Forbered backend-datalag til opbevaring af designprojekter, hardware og felter.
+
+=== Supabase setup:
+
+* Initialiser nyt Supabase-projekt
+* Brug Supabase UI til at oprette nedenstående tabeller
+* Tilføj basic Row Level Security (RLS) for private adgang
+
+=== Tabeller:
+
+.projects
+|===
+| navn         | type
+|--------------|--------
+| id           | uuid (PK)
+| name         | text
+| design_name  | text
+| collection   | text
+| version      | text
+| height_mm    | int
+| width_mm     | int
+| depth_mm     | int
+| image_url    | text
+| gltf_url     | text
+| created_at   | timestamp (default now())
+|===
+
+.hardware
+|===
+| navn         | type
+|--------------|--------
+| id           | uuid (PK)
+| name         | text
+| type         | text
+| vendor       | text
+| unit_price   | decimal
+| colors       | text[]
+| created_at   | timestamp (default now())
+|===
+
+.project_hardware_link
+|===
+| navn         | type
+|--------------|--------
+| id           | uuid (PK)
+| project_id   | uuid (FK → projects.id)
+| hardware_id  | uuid (FK → hardware.id)
+|===
+
+.segments
+|===
+| navn         | type
+|--------------|--------
+| id           | uuid (PK)
+| project_id   | uuid (FK → projects.id)
+| name         | text
+| surface      | text   // forside, bagside, bund osv.
+| polygon_data | jsonb
+| created_at   | timestamp (default now())
+|===
+
+=== RLS:
+
+* Tillad kun adgang til data med API-key eller service-role
+
+=== Test:
+
+* Indsæt eksempelprojekt med tilknyttet hardware og segmenter
+* Bekræft at SELECT/INSERT fungerer via Supabase API Explorer
+
+=== Output:
+
+* Supabase-projekt klar med tabeller og RLS
+* Database-url og anon/public keys gemt i .env.example
+
+=== Status:
+
+Tilføj som "in-progress" i roo.runplan.json
+
+== Task 003 – Forbind frontend med Supabase og send projektdata
+
+=== Formål:
+
+Når bruger indtaster metadata og uploader billede, skal data sendes og gemmes i Supabase.
+
+=== Forbindelser:
+
+* Installer Supabase JS SDK
+* Konfigurer supabaseClient i /lib/supabase.ts med .env support
+
+=== Funktioner:
+
+. Gem billede i Supabase Storage:
+ .. Bucket: `project-images`
+ .. Filnavn: `{uuid}.{filetype}`
+ .. Returnér URL
+
+. Gem projektdata i Supabase DB:
+ .. Opret ny række i `projects` med metadata + image_url
+ .. Brug `supabase.from('projects').insert(...)`
+
+. Frontend:
+ .. Tilføj `Gem projekt`-knap
+ .. Når klik, upload billede, send metadata
+ .. Vis “Projekt oprettet!” når succes
+
+. .env.example:
+
+=== Test:
+
+* Indtast data og billede → gem i Supabase
+* Tjek om projekt og billede fremgår i DB og Storage
+
+=== Output:
+
+* Brugeren kan oprette et nyt projekt direkte fra browseren
+* Data gemmes sikkert i Supabase
+
+=== Status:
+
+Tilføj som "in-progress" i roo.runplan.json
+
+== Task 004 – Opsæt AI-segmentering af taskebilleder (FastAPI service)
+
+=== Formål:
+
+Etabler en AI-baseret billedanalyseservice som kan segmentere et taske-billede i felter til brug i 3D-modellen.
+
+=== Teknologi:
+
+* Python 3.10
+* FastAPI
+* Segment Anything Model (Meta AI)
+* Ultralytics YOLOv8 (pre-trained til objektidentifikation)
+* OpenCV + NumPy til billedbehandling
+
+=== Struktur:
+
+* Opret ny mappe: `/services/segmentation-api/`
+* Inkludér requirements.txt med nødvendige ML-pakker
+
+=== Funktionalitet:
+
+. Endpoint: `POST /segment`
+ .. Input: Multipart form med billede
+ .. Output: JSON med liste af felter:
+ ```
+ {
+   "segments": [
+     {
+       "id": "forside_felt_1",
+       "polygon": [[x1, y1], [x2, y2], ...],
+       "surface": "forside"
+     },
+     ...
+   ]
+ }
+ ```
+
+. Model pipeline:
+ .. Brug YOLO til at identificere relevante regioner
+ .. Brug Segment Anything (SAM) til at optegne polygoner
+ .. Filtrér irrelevante eller overlappende felter
+ .. Returnér renset liste af polygoner
+
+=== Test:
+
+* Kør testbillede igennem og verificér at der returneres mindst 2-4 felter med polygoner
+* Visualisér segmenter lokalt i testscript (valgfrit)
+
+=== Ekstra:
+
+* Dokumentér API via FastAPI Swagger
+* Klar til kald fra frontend (Task 005)
+
+=== Status:
+
+Tilføj som "in-progress" i roo.runplan.json
+
+== Task 005 – Integrér AI-segmentering i frontend og gem segmenter
+
+=== Formål:
+
+Kald segmenterings-API’en fra frontend, vis felter visuelt, og gem resultatet i Supabase.
+
+=== API-endpoint:
+
+https://segmentation-api-5tom.onrender.com/segment
+
+=== Funktionalitet:
+
+. Kald API:
+ .. Efter projekt er oprettet og billede uploadet, send billede til API
+ .. Vis loading-state mens API analyserer
+
+. Vis segmenter:
+ .. Brug Canvas, SVG eller Three.js overlay til at vise felter med polygoner
+ .. Navngiv automatisk som: `forside_felt_1`, `forside_felt_2`, ...
+
+. Gem felter:
+ .. Send segmentdata som JSON til Supabase:
+  .. Table: `segments`
+  .. Felter: project_id, name, surface, polygon_data
+
+. UI:
+ .. Vis knap “Gem felter”
+ .. Vis liste af felter med navn og side
+
+=== Test:
+
+* Segmentér billede → min. 2-4 felter vises
+* Bekræft at felter gemmes i Supabase med korrekt projekt_id
+
+=== Output:
+
+* Segmentering af taskens forside virker
+* Felter vises i browser og gemmes i databasen
+
+=== Status:
+
+Tilføj som "in-progress" i roo.runplan.json
+
+== Task 006 – Hardwareeditor og tilknytning til projekt
+
+=== Formål:
+
+Muliggør tilknytning af hardware (fx lynlåse, spænder) til taskedesigns via UI.
+
+=== Funktionalitet:
+
+. Hardware-editor UI:
+ .. Ny side `/hardware`
+ .. Formular til oprettelse af hardware:
+  .. name, type, vendor, unit_price, colors[]
+ .. Gem i `hardware`-tabel i Supabase
+
+. Tilknytning til projekt:
+ .. På projekt-visning: vis dropdown eller checkboxes for valg af hardware
+ .. Gem relation i `project_hardware_link`
+
+. Visning:
+ .. Vis valgt hardware i projektoverblik
+ .. Vis advarsel hvis intet hardware er tilknyttet
+
+=== Test:
+
+* Opret ny hardware → vis i dropdown
+* Tilføj 2 hardwaredele til et projekt → tjek `project_hardware_link`
+
+=== Output:
+
+* Hardware kan tilføjes og kobles til designprojekter
+* Grundlag for kommende kostberegninger
+
+=== Status:
+
+Tilføj som "in-progress" i roo.runplan.json
+
+== Task 007 – Generér og vis 3D-model i browseren med segmenter
+
+=== Formål:
+
+Visualiser taskens form og segmenterede felter i 3D baseret på brugerens dimensioner og AI-output.
+
+=== Teknologi:
+
+* React Three Fiber (WebGL)
+* Drei helpers (mesh, controls)
+* glTF struktur genereret dynamisk
+
+=== Funktionalitet:
+
+. Konverter segmenter til flader:
+ .. Brug projektets højde, bredde, dybde (fra DB)
+ .. Opbyg en 3D box med seks flader
+ .. Brug segment-data til at “projicere” polygoner på frontfladen
+ .. Navngiv hvert mesh ift. feltets navn
+
+. Vis 3D preview:
+ .. Side `/project/[id]/3d-preview`
+ .. Kamera-kontrol (OrbitControls)
+ .. Farve hver flade forskelligt (default gråskala)
+ .. Vis feltnavne som hover-tooltip
+
+. Eksport:
+ .. Tilføj knap “Download glTF”
+ .. Generér og eksporter `.gltf` med navngivne meshes
+
+=== Test:
+
+* Segment vises på korrekt placering ift. mål
+* Feltnavne matcher segment-tabellen
+* .gltf kan åbnes i standard viewer (fx https://gltf-viewer.donmccurdy.com)
+
+=== Output:
+
+* Brugeren kan se og eksportere taskens 3D-model inkl. felter
+
+=== Status:
+
+Tilføj som "in-progress" i roo.runplan.json
+
+== Task 008 – Genåbn og redigér eksisterende projekt
+
+=== Formål:
+
+Gør det muligt at finde og redigere tidligere oprettede taskedesigns.
+
+=== Funktionalitet:
+
+. Projektoversigt:
+ .. Ny side: `/projects`
+ .. Vis liste over alle projekter i Supabase
+ .. Vis kolonner: navn, design_navn, kollektion, dato, antal felter, antal hardware
+
+. Redigér projekt:
+ .. Klik på et projekt fører til: `/project/[id]`
+ .. Udfyld formular med eksisterende metadata
+ .. Hent segmenter og hardware fra DB
+ .. Vis preview + 3D model + hardware
+
+. Mulighed for redigering:
+ .. Opdater metadata og gem
+ .. Tilføj/fjern hardware
+ .. Regenerér 3D model hvis mål ændres
+ .. Download opdateret `.gltf`
+
+=== Test:
+
+* Genåbn 2 eksisterende projekter
+* Redigér navn og hardware
+* Bekræft at ændringer gemmes og vises korrekt
+
+=== Output:
+
+* Designteamet kan arbejde iterativt med hver taske over tid
+
+=== Status:
+
+Tilføj som "in-progress" i roo.runplan.json

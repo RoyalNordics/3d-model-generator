@@ -1,0 +1,1 @@
+✅ MVP VERSION COMPLETE – klar til validering og test
