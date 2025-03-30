@@ -387,3 +387,207 @@ Gør det muligt at finde og redigere tidligere oprettede taskedesigns.
 === Status:
 
 Tilføj som "in-progress" i roo.runplan.json
+
+== Task 009 – Opret upload-side til oprettelse af nyt projekt
+
+=== Formål:
+
+Muliggør oprettelse af nyt taskedesign ved at indtaste metadata og uploade billede.
+
+=== Placering:
+
+/app/upload/page.tsx
+
+=== Funktionalitet:
+
+. Formularfelter:
+ .. Projektnavn
+ .. Designnavn
+ .. Kollektion
+ .. Version
+ .. Højde (mm)
+ .. Bredde (mm)
+ .. Dybde (mm)
+ .. Upload billede (acceptér kun PNG og JPEG)
+
+. UI-behavior:
+ .. Vis preview af billede
+ .. Valider at alle felter er udfyldt
+ .. Vis fejlbesked ved manglende input
+ .. “Opret projekt”-knap aktiveres først når alt er gyldigt
+
+. Efter klik:
+ .. Billede gemmes i Supabase Storage (`project-images`)
+ .. Metadata + billede-url gemmes i `projects`-tabellen
+ .. Brugeren viderestilles til næste skridt (fx segmentering eller projektvisning)
+
+. Brug komponentbibliotek:
+ .. Tailwind til styling
+ .. Shadcn/ui (hvis installeret)
+
+=== Test:
+
+* Opret projekt med billede og metadata
+* Tjek at projekt fremgår i Supabase med billede-url
+* Tjek validering og preview virker
+
+=== Output:
+
+* En fungerende upload-side klar til test i browser
+
+=== Status:
+
+Tilføj som "in-progress" i roo.runplan.json
+
+== Task 009 – Opret upload-side til oprettelse af nyt projekt
+
+=== Formål:
+
+Muliggør oprettelse af nyt taskedesign ved at indtaste metadata og uploade billede.
+
+=== Placering:
+
+/app/upload/page.tsx
+
+=== Funktionalitet:
+
+. Formularfelter:
+ .. Projektnavn
+ .. Designnavn
+ .. Kollektion
+ .. Version
+ .. Højde (mm)
+ .. Bredde (mm)
+ .. Dybde (mm)
+ .. Upload billede (acceptér kun PNG og JPEG)
+
+. UI-behavior:
+ .. Vis preview af billede
+ .. Valider at alle felter er udfyldt
+ .. Vis fejlbesked ved manglende input
+ .. “Opret projekt”-knap aktiveres først når alt er gyldigt
+
+. Efter klik:
+ .. Billede gemmes i Supabase Storage (`project-images`)
+ .. Metadata + billede-url gemmes i `projects`-tabellen
+ .. Brugeren viderestilles til næste skridt (fx segmentering eller projektvisning)
+
+. Brug komponentbibliotek:
+ .. Tailwind til styling
+ .. Shadcn/ui (hvis installeret)
+
+=== Test:
+
+* Opret projekt med billede og metadata
+* Tjek at projekt fremgår i Supabase med billede-url
+* Tjek validering og preview virker
+
+=== Output:
+
+* En fungerende upload-side klar til test i browser
+
+=== Status:
+
+Tilføj som "in-progress" i roo.runplan.json
+
+== Task 009 – Opret upload-side til oprettelse af nyt projekt
+
+=== Formål:
+
+Muliggør oprettelse af nyt taskedesign ved at indtaste metadata og uploade billede.
+
+=== Placering:
+
+/app/upload/page.tsx
+
+=== Funktionalitet:
+
+. Formularfelter:
+ .. Projektnavn
+ .. Designnavn
+ .. Kollektion
+ .. Version
+ .. Højde (mm)
+ .. Bredde (mm)
+ .. Dybde (mm)
+ .. Upload billede (acceptér kun PNG og JPEG)
+
+. UI-behavior:
+ .. Vis preview af billede
+ .. Valider at alle felter er udfyldt
+ .. Vis fejlbesked ved manglende input
+ .. “Opret projekt”-knap aktiveres først når alt er gyldigt
+
+. Efter klik:
+ .. Billede gemmes i Supabase Storage (`project-images`)
+ .. Metadata + billede-url gemmes i `projects`-tabellen
+ .. Brugeren viderestilles til næste skridt (fx segmentering eller projektvisning)
+
+. Brug komponentbibliotek:
+ .. Tailwind til styling
+ .. Shadcn/ui (hvis installeret)
+
+=== Test:
+
+* Opret projekt med billede og metadata
+* Tjek at projekt fremgår i Supabase med billede-url
+* Tjek validering og preview virker
+
+=== Output:
+
+* En fungerende upload-side klar til test i browser
+
+=== Status:
+
+Tilføj som "in-progress" i roo.runplan.json
+
+== Task 009 – Opret upload-side til oprettelse af nyt projekt
+
+=== Formål:
+
+Muliggør oprettelse af nyt taskedesign ved at indtaste metadata og uploade billede.
+
+=== Placering:
+
+/app/upload/page.tsx
+
+=== Funktionalitet:
+
+. Formularfelter:
+ .. Projektnavn
+ .. Designnavn
+ .. Kollektion
+ .. Version
+ .. Højde (mm)
+ .. Bredde (mm)
+ .. Dybde (mm)
+ .. Upload billede (acceptér kun PNG og JPEG)
+
+. UI-behavior:
+ .. Vis preview af billede
+ .. Valider at alle felter er udfyldt
+ .. Vis fejlbesked ved manglende input
+ .. “Opret projekt”-knap aktiveres først når alt er gyldigt
+
+. Efter klik:
+ .. Billede gemmes i Supabase Storage (`project-images`)
+ .. Metadata + billede-url gemmes i `projects`-tabellen
+ .. Brugeren viderestilles til næste skridt (fx segmentering eller projektvisning)
+
+. Brug komponentbibliotek:
+ .. Tailwind til styling
+ .. Shadcn/ui (hvis installeret)
+
+=== Test:
+
+* Opret projekt med billede og metadata
+* Tjek at projekt fremgår i Supabase med billede-url
+* Tjek validering og preview virker
+
+=== Output:
+
+* En fungerende upload-side klar til test i browser
+
+=== Status:
+
+Tilføj som "in-progress" i roo.runplan.json
