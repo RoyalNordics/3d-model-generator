@@ -1,0 +1,73 @@
+= MVP Testprotokol: EGO 3D-Model-Generator
+:sectnums:
+:toc:
+
+== Formål
+
+Dette dokument indeholder testprotokollen til validering af MVP-versionen af det interne 3D-segmenteringsværktøj.
+
+== Testmiljø
+
+- Frontend: Next.js app hosted via Vercel / lokal
+- Backend: Supabase (DB + Storage)
+- AI-segmentering: https://segmentation-api-5tom.onrender.com
+- Bruger: Thomas eller ikke-teknisk teammedlem
+
+== Testplan
+
+.Test 1 – Opret projekt
+|===
+|Step | Beskrivelse | Resultat | Kommentar
+
+|1.1 | Gå til upload-siden og indtast metadata | ✅/❌ | 
+|1.2 | Upload billede af en taske | ✅/❌ | 
+|1.3 | Klik “Opret” og tjek at projektet oprettes i Supabase | ✅/❌ | 
+|===
+
+.Test 2 – AI Segmentering
+|===
+|Step | Beskrivelse | Resultat | Kommentar
+
+|2.1 | Klik “Segmentér” | ✅/❌ | 
+|2.2 | Tjek om felter vises i browser | ✅/❌ | 
+|2.3 | Tjek at felterne gemmes i DB | ✅/❌ | 
+|===
+
+.Test 3 – Hardwaretilknytning
+|===
+|Step | Beskrivelse | Resultat | Kommentar
+
+|3.1 | Opret ny hardware i UI | ✅/❌ | 
+|3.2 | Tilknyt hardware til projekt | ✅/❌ | 
+|3.3 | Bekræft i Supabase at relation er gemt | ✅/❌ | 
+|===
+
+.Test 4 – 3D Preview
+|===
+|Step | Beskrivelse | Resultat | Kommentar
+
+|4.1 | Gå til projektets 3D preview-side | ✅/❌ | 
+|4.2 | Tjek om box vises med korrekte dimensioner | ✅/❌ | 
+|4.3 | Tjek at segmenter vises korrekt placeret | ✅/❌ | 
+|===
+
+.Test 5 – Eksport
+|===
+|Step | Beskrivelse | Resultat | Kommentar
+
+|5.1 | Klik på “Download glTF” | ✅/❌ | 
+|5.2 | Åbn fil i eksternt viewer (gltf-viewer.donmccurdy.com) | ✅/❌ | 
+|===
+
+.Test 6 – Genåbning af projekt
+|===
+|Step | Beskrivelse | Resultat | Kommentar
+
+|6.1 | Gå til projektsiden | ✅/❌ | 
+|6.2 | Tjek om metadata, segmenter og hardware vises korrekt | ✅/❌ | 
+|6.3 | Redigér projekt og gem ændringer | ✅/❌ | 
+|===
+
+== Konklusion
+
+Sæt ✅/❌ ud for hvert punkt og noter problemer. Når alle tests er ✅, er MVP valideret og klar til drift eller integration.
