@@ -8,16 +8,22 @@ const UploadPage = () => {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    // Add logic for:
-    // - Saml data fra formularfelter
-    // - Upload billedet til Supabase Storage
-    // - Opret ny række i `projects`-tabellen
-    // - Vent på svar
+    console.log("handleSubmit called");
+    try {
+      // Add logic for:
+      // - Saml data fra formularfelter
+      // - Upload billedet til Supabase Storage
+      // - Opret ny række i `projects`-tabellen
+      // - Vent på svar
+      console.log("Placeholder logic running");
 
-    // After success:
-    // - Brug `router.push("/project/[project_id]")` med korrekt ID
-    // - Evt. vis "Projekt oprettet" kortvarigt først
-    router.push("/project/123"); // Placeholder redirect
+      // After success:
+      // - Brug `router.push("/project/[project_id]")` med korrekt ID
+      // - Evt. vis "Projekt oprettet" kortvarigt først
+      router.push("/project/123"); // Placeholder redirect
+    } catch (error) {
+      console.error("Error in handleSubmit:", error);
+    }
   };
 
   return (
